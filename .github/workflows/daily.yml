@@ -1,0 +1,33 @@
+name: Daily checklist
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC = 06:00 in Lagos
+  workflow_dispatch:       # lets you run it by hand to test
+
+permissions:
+  issues: write
+
+jobs:
+  open-checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create today's checklist issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          TODAY=$(date -u +%F)
+          gh label create daily --repo "$REPO" --color 5319e7 --force || true
+          gh issue create --repo "$REPO" \
+            --title "Daily checklist $TODAY" \
+            --label daily \
+            --body "## Minimum day
+          - [ ] 1 Codewars kata (commit the solution)
+          - [ ] Write today's log in daily/$TODAY.md
+
+          ## Full day
+          - [ ] 45 minutes on my current project's next issue
+          - [ ] Tick the board
+
+          Close this issue when done."
